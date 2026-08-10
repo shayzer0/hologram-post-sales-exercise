@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Halcyon Motors - Billing Simulator</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+		<style>
+			:root {
+				--bg: #f8f9fa;
+				--panel: #ffffff;
+				--panel-alt: #f1f3f5;
+				--border: #e2e8f0;
+				--border-soft: #edf2f7;
+				--text: #1a202c;
+				--text-dim: #4a5568;
+				--text-faint: #718096;
+				--accent: #2563eb;
+				--accent-hover: #1d4ed8;
+				--accent-soft: rgba(37, 99, 235, 0.08);
+				--good: #16a34a;
+				--warn: #d97706;
+				--font-main: 'Noto Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+			}
+
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+
+			body {
+				background: var(--bg);
+				color: var(--text);
+				font-family: var(--font-main);
+				line-height: 1.5;
+				padding: 2.5rem 2rem;
+				min-height: 100vh;
+			}
+
+			.wrap {
+				max-width: 1080px;
+				margin: 0 auto;
+			}
+
+			/* Header */
+			header {
+				display: flex;
+				justify-content: space-between;
+				align-items: baseline;
+				border-bottom: 1px solid var(--border);
+				padding-bottom: 1.25rem;
+				margin-bottom: 2rem;
+			}
+
+			.eyebrow {
+				font-size: 0.75rem;
+				font-weight: 600;
+				letter-spacing: 0.05em;
+				color: var(--text-faint);
+				text-transform: uppercase;
+				margin-bottom: 0.35rem;
+			}
+
+			h1 {
+				font-size: 1.35rem;
+				font-weight: 700;
+				letter-spacing: -0.01em;
+			}
+
+			.org-tag {
+				font-size: 0.8rem;
+				font-weight: 500;
+				color: var(--text-dim);
+				background: var(--panel);
+				border: 1px solid var(--border);
+				padding: 0.3rem 0.65rem;
+				border-radius: 4px;
+			}
+
+			/* Layout */
+			.grid {
+				display: grid;
+				grid-template-columns: 320px 1fr;
+				gap: 1.5rem;
+				align-items: start;
+			}
+
+			@media (max-width: 860px) {
+				.grid {
+					grid-template-columns: 1fr;
+				}
+			}
+
+			.panel {
+				background: var(--panel);
+				border: 1px solid var(--border);
+				border-radius: 6px;
+				padding: 1.35rem;
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+			}
+
+			.panel-title {
+				font-size: 0.8rem;
+				font-weight: 700;
+				color: var(--text-dim);
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+				margin-bottom: 1.1rem;
+			}
+
+			/* Controls */
+			.field {
+				margin-bottom: 1rem;
+			}
+
+			.field label {
+				display: block;
+				font-size: 0.8rem;
+				font-weight: 500;
+				color: var(--text-dim);
+				margin-bottom: 0.35rem;
+			}
+
+			.field input {
+				width: 100%;
+				background: var(--bg);
+				border: 1px solid var(--border);
+				border-radius: 4px;
+				padding: 0.55rem 0.7rem;
+				color: var(--text);
+				font-family: var(--font-main);
+				font-size: 0.9rem;
+			}
+
+			.field input:focus {
+				outline: none;
+				border-color: var(--accent);
+			}
+
+			.btn-preset {
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+				justify-content: center;
+				width: 100%;
+				background: var(--accent);
+				border: 1px solid var(--accent);
+				color: #ffffff;
+				font-family: var(--font-main);
+				font-size: 0.85rem;
+				font-weight: 600;
+				padding: 0.65rem 1rem;
+				border-radius: 4px;
+				cursor: pointer;
+				margin-bottom: 1.35rem;
+				transition: background-color 0.15s ease, border-color 0.15s ease;
+			}
+
+			.btn-preset:hover {
+				background: var(--accent-hover);
+				border-color: var(--accent-hover);
+				color: #ffffff;
+			}
+
+			.btn-preset svg {
+				width: 14px;
+				height: 14px;
+				flex-shrink: 0;
+			}
+
+			/* Status note */
+			.note {
+				border-top: 1px solid var(--border-soft);
+				margin-top: 1.35rem;
+				padding-top: 1.1rem;
+			}
+
+			.note-head {
+				display: flex;
+				align-items: center;
+				gap: 0.45rem;
+				font-size: 0.8rem;
+				font-weight: 600;
+				color: var(--text-dim);
+				margin-bottom: 0.5rem;
+			}
+
+			.note-head svg {
+				width: 13px;
+				height: 13px;
+				flex-shrink: 0;
+				color: var(--text-faint);
+			}
+
+			.note p {
+				font-size: 0.8rem;
+				color: var(--text-faint);
+				line-height: 1.5;
+			}
+
+			.note .flag {
+				color: var(--accent);
+				margin-top: 0.55rem;
+				display: block;
+				font-weight: 500;
+			}
+
+			/* Invoice panel */
+			.invoice-head {
+				display: flex;
+				justify-content: space-between;
+				align-items: baseline;
+				margin-bottom: 1.1rem;
+			}
+
+			.tier-tag {
+				font-size: 0.8rem;
+				font-weight: 500;
+				color: var(--text-faint);
+			}
+
+			/* Progress */
+			.progress-block {
+				border: 1px solid var(--border-soft);
+				background: var(--bg);
+				border-radius: 4px;
+				padding: 0.9rem 1rem;
+				margin-bottom: 1.4rem;
+			}
+
+			.progress-row {
+				display: flex;
+				justify-content: space-between;
+				font-size: 0.8rem;
+				color: var(--text-dim);
+				margin-bottom: 0.55rem;
+			}
+
+			.progress-row span:last-child {
+				font-weight: 600;
+				color: var(--text);
+			}
+
+			.progress-track {
+				width: 100%;
+				height: 6px;
+				background: var(--border);
+				border-radius: 3px;
+				overflow: hidden;
+			}
+
+			.progress-fill {
+				height: 100%;
+				background: var(--accent);
+				width: 0%;
+				transition: width 0.25s ease;
+			}
+
+			.status-label {
+				margin-top: 0.6rem;
+				font-size: 0.78rem;
+				font-weight: 600;
+				color: var(--text-faint);
+			}
+
+			.status-label.exceeded {
+				color: var(--good);
+			}
+
+			.status-label.short {
+				color: var(--warn);
+			}
+
+			/* Ledger table */
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				font-size: 0.85rem;
+				font-family: var(--font-main);
+			}
+
+			th {
+				text-align: left;
+				font-size: 0.75rem;
+				font-weight: 600;
+				text-transform: uppercase;
+				letter-spacing: 0.04em;
+				color: var(--text-faint);
+				padding: 0 0 0.6rem 0;
+				border-bottom: 1px solid var(--border);
+			}
+
+			td {
+				padding: 0.65rem 0;
+				border-bottom: 1px solid var(--border-soft);
+				color: var(--text);
+			}
+
+			tr:last-child td {
+				border-bottom: none;
+			}
+
+			.text-right {
+				text-align: right;
+			}
+
+			.dim {
+				color: var(--text-dim);
+			}
+
+			.subtotal-row td {
+				padding-top: 0.85rem;
+				border-top: 1px solid var(--border);
+				font-weight: 600;
+			}
+
+			.floor-row td {
+				color: var(--text-dim);
+				font-size: 0.85rem;
+			}
+
+			.total-row td {
+				border-top: 2px solid var(--accent);
+				padding-top: 0.85rem;
+				font-weight: 700;
+				font-size: 1rem;
+				color: var(--accent);
+			}
+
+			.footnote {
+				font-size: 0.78rem;
+				color: var(--text-faint);
+				border-top: 1px solid var(--border-soft);
+				margin-top: 1.25rem;
+				padding-top: 0.9rem;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="wrap">
+			<header>
+				<div>
+					<div class="eyebrow">Shay Casey - Billing Simulation for Hologram</div>
+					<h1>Halcyon Motors</h1>
+				</div>
+				<span class="org-tag">Org ID 90342</span>
+			</header>
+			<div class="grid">
+				<!-- Controls -->
+				<div class="panel">
+					<div class="panel-title">Inputs</div>
+					<button class="btn-preset" id="presetBtn">
+						<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+							<path d="M6 3l5 5-5 5" stroke-linecap="round" stroke-linejoin="round" />
+						</svg> Load Month 8 </button>
+					<div class="field">
+						<label for="monthInput">Contract month (1–36)</label>
+						<input type="number" id="monthInput" value="" min="1" max="36" placeholder="e.g. 8">
+					</div>
+					<div class="field">
+						<label for="simInput">Active SIM count</label>
+						<input type="number" id="simInput" value="" min="0" placeholder="e.g. 150">
+					</div>
+					<div class="field">
+						<label for="usageInput">Pooled data usage (MB)</label>
+						<input type="number" id="usageInput" value="" min="0" placeholder="e.g. 2400">
+					</div>
+					<div class="field">
+						<label for="smsInput">Outbound SMS</label>
+						<input type="number" id="smsInput" value="" min="0" placeholder="e.g. 0">
+					</div>
+					<div class="note">
+						<div class="note-head">
+							<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
+								<circle cx="8" cy="8" r="6.25" />
+								<path d="M8 7.25v3.5M8 5.25v.01" stroke-linecap="round" />
+							</svg> Test mode rules
+						</div>
+						<p>SIMs move from test mode to active on 100 KB of data, 10 outbound SMS, or 90 days, whichever comes first.</p>
+						<span class="flag">QA item: mid-month conversions bill full MRC pending Deal Desk sign-off.</span>
+					</div>
+				</div>
+				<!-- Invoice -->
+				<div class="panel">
+					<div class="invoice-head">
+						<div class="panel-title" style="margin-bottom:0;">Monthly invoice preview</div>
+						<span class="tier-tag" id="tierBadge">Pending input</span>
+					</div>
+					<div class="progress-block">
+						<div class="progress-row">
+							<span>Minimum spend floor</span>
+							<span id="progressText">$0.00 / $0.00</span>
+						</div>
+						<div class="progress-track">
+							<div class="progress-fill" id="progressFill"></div>
+						</div>
+						<div id="statusLabel" class="status-label">Enter contract details to calculate invoice</div>
+					</div>
+					<table>
+						<thead>
+							<tr>
+								<th>Line item</th>
+								<th>Volume</th>
+								<th>Rate</th>
+								<th class="text-right">Amount</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Base MRC</td>
+								<td id="mrcQty" class="dim">0 SIMs</td>
+								<td class="dim">$2.43/SIM</td>
+								<td id="mrcTotal" class="text-right">$0.00</td>
+							</tr>
+							<tr>
+								<td>Shared data pool</td>
+								<td id="poolQty" class="dim">0 MB</td>
+								<td class="dim">included</td>
+								<td class="text-right">$0.00</td>
+							</tr>
+							<tr>
+								<td>Data overage</td>
+								<td id="overageQty" class="dim">0 MB</td>
+								<td class="dim">$0.75/MB</td>
+								<td id="overageTotal" class="text-right">$0.00</td>
+							</tr>
+							<tr>
+								<td>Outbound SMS</td>
+								<td id="smsQty" class="dim">0 SMS</td>
+								<td class="dim">$0.57/SMS</td>
+								<td id="smsTotal" class="text-right">$0.00</td>
+							</tr>
+							<tr>
+								<td>Support (Developer tier)</td>
+								<td class="dim">1 month</td>
+								<td class="dim">free</td>
+								<td class="text-right">$0.00</td>
+							</tr>
+							<tr class="subtotal-row">
+								<td colspan="3">Total qualifying spend</td>
+								<td id="qualifyingTotal" class="text-right">$0.00</td>
+							</tr>
+							<tr class="floor-row">
+								<td colspan="3">Minimum spend floor</td>
+								<td id="floorAmount" class="text-right">$0.00</td>
+							</tr>
+							<tr class="total-row">
+								<td colspan="3">Estimated invoice total</td>
+								<td id="finalInvoiceTotal" class="text-right">$0.00</td>
+							</tr>
+						</tbody>
+					</table>
+					<div class="footnote"> SIM hardware ($4.50 per G3-F unit) is billed separately at order and excluded from qualifying minimum spend. </div>
+				</div>
+			</div>
+		</div>
+		<script>
+			const monthInput = document.getElementById('monthInput');
+			const simInput = document.getElementById('simInput');
+			const usageInput = document.getElementById('usageInput');
+			const smsInput = document.getElementById('smsInput');
+			const presetBtn = document.getElementById('presetBtn');
+			const mrcQty = document.getElementById('mrcQty');
+			const mrcTotal = document.getElementById('mrcTotal');
+			const poolQty = document.getElementById('poolQty');
+			const overageQty = document.getElementById('overageQty');
+			const overageTotal = document.getElementById('overageTotal');
+			const smsQty = document.getElementById('smsQty');
+			const smsTotal = document.getElementById('smsTotal');
+			const qualifyingTotal = document.getElementById('qualifyingTotal');
+			const floorAmount = document.getElementById('floorAmount');
+			const finalInvoiceTotal = document.getElementById('finalInvoiceTotal');
+			const tierBadge = document.getElementById('tierBadge');
+			const progressText = document.getElementById('progressText');
+			const progressFill = document.getElementById('progressFill');
+			const statusLabel = document.getElementById('statusLabel');
+
+			function getMinimumSpendFloor(month) {
+				if (month <= 3) return {
+					floor: 3.00,
+					tier: "Tier 1 (Months 1–3)"
+				};
+				if (month <= 6) return {
+					floor: 300.00,
+					tier: "Tier 2 (Months 4–6)"
+				};
+				if (month <= 12) return {
+					floor: 600.00,
+					tier: "Tier 3 (Months 7–12)"
+				};
+				if (month <= 24) return {
+					floor: 1200.00,
+					tier: "Tier 4 (Months 13–24)"
+				};
+				return {
+					floor: 2400.00,
+					tier: "Tier 5 (Months 25–36)"
+				};
+			}
+
+			function calculateBilling() {
+				const monthVal = monthInput.value.trim();
+				const simVal = simInput.value.trim();
+				const usageVal = usageInput.value.trim();
+				const smsVal = smsInput.value.trim();
+				if (monthVal === '' && simVal === '' && usageVal === '' && smsVal === '') {
+					tierBadge.textContent = "Pending input";
+					mrcQty.textContent = "0 SIMs";
+					mrcTotal.textContent = "$0.00";
+					poolQty.textContent = "0 MB";
+					overageQty.textContent = "0 MB";
+					overageTotal.textContent = "$0.00";
+					smsQty.textContent = "0 SMS";
+					smsTotal.textContent = "$0.00";
+					qualifyingTotal.textContent = "$0.00";
+					floorAmount.textContent = "$0.00";
+					finalInvoiceTotal.textContent = "$0.00";
+					progressFill.style.width = "0%";
+					progressText.textContent = "$0.00 / $0.00";
+					statusLabel.textContent = "Enter contract details to calculate invoice";
+					statusLabel.className = 'status-label';
+					return;
+				}
+				const month = parseInt(monthVal, 10) || 1;
+				const sims = parseInt(simVal, 10) || 0;
+				const usageMb = parseFloat(usageVal) || 0;
+				const sms = parseInt(smsVal, 10) || 0;
+				const mrc = sims * 2.43;
+				const poolMb = sims * 10;
+				const overageMb = Math.max(0, usageMb - poolMb);
+				const overageFee = overageMb * 0.75;
+				const smsFee = sms * 0.57;
+				const qualifyingSpend = mrc + overageFee + smsFee;
+				const {
+					floor,
+					tier
+				} = getMinimumSpendFloor(month);
+				const finalTotal = Math.max(qualifyingSpend, floor);
+				tierBadge.textContent = tier;
+				mrcQty.textContent = `${sims.toLocaleString()} SIMs`;
+				mrcTotal.textContent = `$${mrc.toFixed(2)}`;
+				poolQty.textContent = `${poolMb.toLocaleString()} MB`;
+				overageQty.textContent = `${overageMb.toLocaleString()} MB`;
+				overageTotal.textContent = `$${overageFee.toFixed(2)}`;
+				smsQty.textContent = `${sms.toLocaleString()} SMS`;
+				smsTotal.textContent = `$${smsFee.toFixed(2)}`;
+				qualifyingTotal.textContent = `$${qualifyingSpend.toFixed(2)}`;
+				floorAmount.textContent = `$${floor.toFixed(2)}`;
+				finalInvoiceTotal.textContent = `$${finalTotal.toFixed(2)}`;
+				const percentage = floor > 0 ? Math.min(100, (qualifyingSpend / floor) * 100) : 0;
+				progressFill.style.width = `${percentage}%`;
+				progressText.textContent = `$${qualifyingSpend.toFixed(2)} / $${floor.toFixed(2)}`;
+				if (qualifyingSpend >= floor) {
+					const diff = qualifyingSpend - floor;
+					statusLabel.textContent = `Floor exceeded by $${diff.toFixed(2)}`;
+					statusLabel.className = 'status-label exceeded';
+				} else {
+					const diff = floor - qualifyingSpend;
+					statusLabel.textContent = `Below floor by $${diff.toFixed(2)} (Minimum spend floor applied)`;
+					statusLabel.className = 'status-label short';
+				}
+			}
+			presetBtn.addEventListener('click', () => {
+				monthInput.value = 8;
+				simInput.value = 150;
+				usageInput.value = 2400;
+				smsInput.value = 0;
+				calculateBilling();
+			});
+			[monthInput, simInput, usageInput, smsInput].forEach(input => {
+				input.addEventListener('input', calculateBilling);
+			});
+			calculateBilling();
+		</script>
+	</body>
+</html>
